@@ -50,7 +50,7 @@ We provide pretrained ELF checkpoints and checkpoints post-trained with MMD or M
 | ELF-B | OpenWebText | T5-small | [🤗 Checkpoint](https://huggingface.co/yresearch/ELF-MMD-OWT/tree/main/t5/elf-mmd) | [🤗 Checkpoint](https://huggingface.co/yresearch/ELF-MMD-OWT/tree/main/t5/elf-mmd-ird) |
 | ELF-B | OpenWebText | GPT-2 Large | [🤗 Checkpoint](https://huggingface.co/yresearch/ELF-MMD-OWT/tree/main/gpt2/elf-mmd) | [🤗 Checkpoint](https://huggingface.co/yresearch/ELF-MMD-OWT/tree/main/gpt2/elf-mmd-ird) |
 | ELF-B | TinyGSM | GPT-2 | [🤗 Checkpoint](https://huggingface.co/yresearch/ELF-MMD-TinyGSM/tree/main/ELF-B/elf-mmd) | [🤗 Checkpoint](https://huggingface.co/yresearch/ELF-MMD-TinyGSM/tree/main/ELF-B/elf-mmd-ird) |
-| ELF-M | TinyGSM | GPT-2 | [🤗 Checkpoint](https://huggingface.co/yresearch/ELF-MMD-TinyGSM/tree/main/ELF-M/elf-mmd) | — |
+| ELF-M | TinyGSM | GPT-2 | [🤗 Checkpoint](https://huggingface.co/yresearch/ELF-MMD-TinyGSM/tree/main/ELF-M/elf-mmd) | [🤗 Checkpoint](https://huggingface.co/yresearch/ELF-MMD-TinyGSM/tree/main/ELF-M/elf-mmd-ird) |
 
 ## Reference Results
 
@@ -163,7 +163,7 @@ CUDA_VISIBLE_DEVICES=0,1 NGPU=2 bash scripts/launch.sh train src/configs/mmd/elf
 | OpenWebText / T5-small | [mmd/t5_owt.yml](src/configs/mmd/t5_owt.yml) | [ird/t5_owt.yml](src/configs/ird/t5_owt.yml) |
 | OpenWebText / GPT-2 Large | [mmd/gpt2_owt.yml](src/configs/mmd/gpt2_owt.yml) | [ird/gpt2_owt.yml](src/configs/ird/gpt2_owt.yml) |
 | TinyGSM / ELF-B | [mmd/elf-b_tinygsm.yml](src/configs/mmd/elf-b_tinygsm.yml) | [ird/elf-b_tinygsm.yml](src/configs/ird/elf-b_tinygsm.yml) |
-| TinyGSM / ELF-M | [mmd/elf-m_tinygsm.yml](src/configs/mmd/elf-m_tinygsm.yml) | — |
+| TinyGSM / ELF-M | [mmd/elf-m_tinygsm.yml](src/configs/mmd/elf-m_tinygsm.yml) | [ird/elf-m_tinygsm.yml](src/configs/ird/elf-m_tinygsm.yml) |
 
 ## Acknowledgements
 
