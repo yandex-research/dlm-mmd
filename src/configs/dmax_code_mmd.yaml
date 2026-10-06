@@ -1,0 +1,11 @@
+_base_: base.yaml
+output_dir: outputs/dmax_code_mmd
+model:
+  pretrained_model: Zigeng/DMax-Coder-16B
+  revision: 71dd63229ac1de08e7d11c4ebde021c20884984e
+dataset:
+  train_path: Zigeng/DMax-LLaDA-2.0-Mini-Code-Trajectories
+training:
+  mmd:
+    mmd_batch_size: 4
+    mmd_rbf_sigma: 16.0

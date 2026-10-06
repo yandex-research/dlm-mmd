@@ -1,0 +1,37 @@
+# Training defaults. The two domain presets override only their differences.
+output_dir: outputs/dmax
+model:
+  pretrained_model: Zigeng/DMax-Math-16B
+  revision: null
+training:
+  max_steps: 400
+  seed: 0
+  max_seq_len: 2048
+  block_size: 32
+  noise_probability: 0.75
+  global_batch_size: 8
+  num_workers: 4
+  max_grad_norm: 1.0
+  gradient_checkpointing_enable: true
+  # Optional Weights & Biases logging from rank 0, as in DMax; requires `pip install wandb`.
+  use_wandb: false
+  wandb_project: dmax-mmd
+  # Defaults to the output directory name.
+  wandb_name: null
+  # RBF token MMD: G groups of B samples; each group gives one MMD estimate, and the
+  # G estimates form the leave-one-out REINFORCE baseline.
+  mmd:
+    group_size: 8  # G
+    mmd_batch_size: 2  # B
+    mmd_rbf_sigma: 10.0
+    mmd_feature_layer: 10
+optimizer:
+  lr: 2.0e-06
+  beta1: 0.9
+  beta2: 0.999
+  weight_decay: 0.01
+  warmup_ratio: 0.03
+dataset:
+  train_path: Zigeng/DMax-LLaDA-2.0-Mini-Math-Trajectories
+  split: train
+  revision: null
