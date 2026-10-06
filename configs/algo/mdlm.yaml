@@ -1,0 +1,9 @@
+name: mmd
+backbone: hf_dit  # hf_dit (OpenWebText) / dit (TinyGSM)
+parameterization: subs
+time_conditioning: False
+T: 0  # 0 (continuous time) / 1000 
+subs_masking: False
+causal_attention: False
+ignore_bos: False
+loss_type: elbo

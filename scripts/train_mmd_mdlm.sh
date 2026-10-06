@@ -1,0 +1,23 @@
+python -u -m main \
+  loader.batch_size=8 \
+  loader.eval_batch_size=8 \
+  loader.num_workers=0 \
+  loader.pin_memory=False \
+  strategy.find_unused_parameters=True \
+  eval.compute_generative_perplexity=True \
+  eval.owt_pareto_temp_every_n_validations=1 \
+  'eval.owt_pareto_steps=[8,16,32]' \
+  'eval.pareto_temperatures=[0.75,0.80,0.85,0.90,0.95,1.00,1.05,1.10,1.20]' \
+  trainer.devices=8 \
+  trainer.gradient_clip_val=null \
+  trainer.precision=bf16-mixed \
+  sampling.steps=32 \
+  optim.lr=1e-4 \
+  trainer.max_steps=4000 \
+  trainer.num_sanity_val_steps=0 \
+  trainer.val_check_interval=250 \
+  trainer.limit_val_batches=0.01 \
+  callbacks.checkpoint_every_n_steps.every_n_train_steps=250 \
+  callbacks.checkpoint_every_n_steps.save_top_k=0 \
+  checkpointing.resume_from_ckpt=False \
+  checkpointing.use_periodic_checkpoint=True

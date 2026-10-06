@@ -1,0 +1,3 @@
+_target_: lightning.pytorch.loggers.TensorBoardLogger
+save_dir: ${checkpointing.save_dir}/tb_logs
+name: ${algo.name}

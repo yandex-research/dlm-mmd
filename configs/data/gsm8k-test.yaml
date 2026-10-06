@@ -1,0 +1,10 @@
+train: gsm8k_test
+valid: gsm8k_test
+tokenizer_name_or_path: HuggingFaceTB/SmolLM-135M
+cache_dir: ""
+wrap: False
+streaming: False
+insert_train_eos: True
+insert_valid_eos: True
+separator: "\n"
+data_path: ""
