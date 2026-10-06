@@ -1,0 +1,48 @@
+objective: ird
+
+# Teacher: an MMD checkpoint; it initializes the generator and the frozen target model.
+task: owt
+teacher_checkpoint: yresearch/ELF-MMD-OWT/t5/elf-mmd/ckpt.pt
+checkpoint_path: yresearch/ELF-MMD-OWT/t5/elf-mmd-ird/ckpt.pt  # Published model for standalone evaluation.
+
+# Dataset
+data_path: embedded-language-flows/openwebtext-t5
+max_length: 1024
+pad_token: pad
+
+# Encoder
+encoder_family: t5
+encoder_model_name: t5-small
+latent_mean: 0.0
+latent_std: 0.2
+
+# Model architecture (must match the teacher)
+model: ELF-B
+self_cond_cfg_min: 0.5
+self_cond_cfg_max: 5.0
+
+# IRD
+ird_steps: 8
+
+# Decoder objective
+decoder_prob: 0.2
+decoder_noise_scale: 5.0
+
+# Training
+global_batch_size: 64
+max_iters: 5500
+seed: "42, 43, 44, 45, 46"
+
+# Evaluation
+sampling_configs_path: src/configs/sampling_configs/elf-mmd_owt.yml
+num_samples: 1000
+eval_freq: 500
+
+# Logging & Checkpointing
+log_freq: 100
+save_freq: 500
+output_dir: outputs/elf-b-mmd-ird_t5_owt
+
+# Wandb
+use_wandb: false
+wandb_project: elf-posttrain

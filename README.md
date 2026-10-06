@@ -1,157 +1,170 @@
-<h1 align="center">Representation-Space MMD for Diffusion Language Models</h1>
+# ELF-MMD
 
-[![arXiv](https://img.shields.io/badge/arXiv-Paper-b31b1b.svg)](https://arxiv.org/abs/2610.06648) [![Hugging Face](https://img.shields.io/badge/Hugging%20Face-Models-yellow.svg)](https://huggingface.co/collections/yresearch/dmax-mmd) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-
-
-This is the official PyTorch implementation of the paper _Representation-Space MMD for Diffusion
-Language Models_. This branch (`main`) post-trains the released 16B
-[DMax](https://github.com/czg1225/DMax) models, which use hybrid masked–uniform block diffusion,
-and evaluates them with DMax's original dInfer pipeline. The other experiments of the paper live
-on separate branches:
-
-- [`mdlm-mmd`](https://github.com/yandex-research/dlm-mmd/tree/mdlm-mmd): MMD post-training of
-  [MDLM](https://github.com/kuleshov-group/mdlm).
-- [`elf-mmd`](https://github.com/yandex-research/dlm-mmd/tree/elf-mmd): MMD post-training of
-  [ELF](https://github.com/lillian039/ELF).
-
-## Updates
-
-- **[Oct 6, 2026]**: Code and DMax-MMD checkpoints released.
-- **[Oct 6, 2026]**: Paper released on [arXiv](https://arxiv.org/abs/2610.06648).
-
-## Highlights
+This branch provides the PyTorch implementation of ELF-MMD from *Representation-Space MMD for Diffusion Language Models*. It supports post-training and evaluation of [ELF](https://arxiv.org/abs/2605.10938) models on OpenWebText and TinyGSM.
 
 <p align="center">
-  <img src="assets/mmd.png" alt="Representation-space MMD" width="90%">
+  <img src="assets/continuous_training.png" alt="Continuous training diagram">
 </p>
-
-- **A distribution-level objective for diffusion LMs.** We post-train with the Maximum Mean
-  Discrepancy (MMD) between the model's own samples and reference responses, measured in the
-  representation space of a frozen DLM, rather than with token-level cross-entropy.
-- **Faster parallel decoding at the same or better accuracy.** On DMax, MMD post-training raises
-  the number of tokens decoded per forward pass (TPF) on every math and code benchmark.
-- **Cheap.** Post-training takes only 400 optimizer steps, about 13 minutes for Math and 18 minutes for Coder on 8×H100 GPUs.
 
 ## Installation
 
 ```bash
 git clone https://github.com/yandex-research/dlm-mmd.git
 cd dlm-mmd
+git checkout elf-mmd
 ```
 
-Training and evaluation use separate environments.
-
-**Training environment**:
+Create a conda environment named `elf` and install the dependencies:
 
 ```bash
-conda create -n dmax-mmd python=3.11 -y && conda activate dmax-mmd
+conda create -n elf python=3.10 -y
+conda activate elf
 pip install -r requirements.txt
 ```
 
-**Evaluation environment**, the same as for DMax's original dInfer evaluator:
+Optionally, log in to Weights & Biases (W&B) to track your experiments:
 
 ```bash
-conda create -n dinfer python=3.11 -y && conda activate dinfer
-# sglang 0.5.3.post1 needs flashinfer-python 0.4.0, whose pinned build dependency
-# apache-tvm-ffi==0.1.0b15 is no longer on PyPI. Build it against the 0.1.0 release.
-curl -sSLO https://files.pythonhosted.org/packages/source/f/flashinfer_python/flashinfer_python-0.4.0.tar.gz
-tar xzf flashinfer_python-0.4.0.tar.gz
-sed -i 's/apache-tvm-ffi==0.1.0b15/apache-tvm-ffi==0.1.0/' \
-  flashinfer_python-0.4.0/pyproject.toml flashinfer_python-0.4.0/requirements.txt
-pip wheel --no-deps ./flashinfer_python-0.4.0 -w wheels
-# Install in DMax's order: sglang and vllm cannot be resolved together, and vllm overrides
-# some of sglang's pins (for example xgrammar), as in the upstream environment.
-pip install --find-links wheels sglang==0.5.3.post1
-pip install --find-links wheels vllm==0.10.2
-pip install "lm_eval[math]" evaluate astor accelerate
+wandb login YOUR_WANDB_API_KEY
 ```
+
+Set `use_wandb: true` in your config to enable logging.
 
 ## Checkpoints
 
-We provide post-trained checkpoints (downloaded automatically by `scripts/eval.sh`):
+We provide pretrained ELF checkpoints and checkpoints post-trained with MMD or MMD followed by IRD.
 
-| Model | Checkpoint |
-| --- |  --- |
-| DMax-Math-MMD (16B) | 🤗 [yresearch/DMax-Math-MMD](https://huggingface.co/yresearch/DMax-Math-MMD) |
-| DMax-Coder-MMD (16B) | 🤗 [yresearch/DMax-Coder-MMD](https://huggingface.co/yresearch/DMax-Coder-MMD) |
+**Pretrained ELF models** (used to initialize MMD training):
 
-## Reference results
+| Model | Task | Encoder | Checkpoint |
+| --- | --- | --- | --- |
+| ELF-B | OpenWebText (unconditional) | T5-small | [🤗 embedded-language-flows/ELF-B-owt-torch](https://huggingface.co/embedded-language-flows/ELF-B-owt-torch) |
+| ELF-B | OpenWebText (unconditional) | GPT-2 Large | [🤗 yresearch/ELF-MMD-OWT/gpt2/elf](https://huggingface.co/yresearch/ELF-MMD-OWT/tree/main/gpt2/elf) |
+| ELF-B | TinyGSM (conditional) | GPT-2 | [🤗 yresearch/ELF-MMD-TinyGSM/ELF-B/elf](https://huggingface.co/yresearch/ELF-MMD-TinyGSM/tree/main/ELF-B/elf) |
+| ELF-M | TinyGSM (conditional) | GPT-2 | [🤗 yresearch/ELF-MMD-TinyGSM/ELF-M/elf](https://huggingface.co/yresearch/ELF-MMD-TinyGSM/tree/main/ELF-M/elf) |
 
-Accuracy (%) / tokens per forward (TPF) on math and code benchmarks, with decoding threshold 0.85
-for math and 0.9 for code (the defaults of `scripts/eval.sh`). Baseline results are taken from the
-original DMax paper.
+**Post-trained models:**
 
-| Method | GSM8K | MATH500 | Minerva-Algebra | ASDIV | HumanEval-Instruct | MBPP-Instruct |
-| --- | :---: | :---: | :---: | :---: | :---: | :---: |
-| DMax-Math | 92.1 / 5.48 | 75.4 / 5.94 | 91.5 / 7.03 | 92.5 / 5.62 | – | – |
-| **DMax-Math-MMD** | 92.1 / **6.15** | **76.0** / **6.84** | **92.1** / **8.19** | **92.9** / **6.20** | – | – |
-| DMax-Coder | – | – | – | – | 83.5 / 7.36 | 79.2 / 5.86 |
-| **DMax-Coder-MMD** | – | – | – | – | **85.9** / **8.07** | **83.0** / **6.10** |
+| Model | Task | Encoder | ELF-MMD | ELF-MMD + IRD |
+| --- | --- | --- | --- | --- |
+| ELF-B | OpenWebText | T5-small | [🤗 Checkpoint](https://huggingface.co/yresearch/ELF-MMD-OWT/tree/main/t5/elf-mmd) | [🤗 Checkpoint](https://huggingface.co/yresearch/ELF-MMD-OWT/tree/main/t5/elf-mmd-ird) |
+| ELF-B | OpenWebText | GPT-2 Large | [🤗 Checkpoint](https://huggingface.co/yresearch/ELF-MMD-OWT/tree/main/gpt2/elf-mmd) | [🤗 Checkpoint](https://huggingface.co/yresearch/ELF-MMD-OWT/tree/main/gpt2/elf-mmd-ird) |
+| ELF-B | TinyGSM | GPT-2 | [🤗 Checkpoint](https://huggingface.co/yresearch/ELF-MMD-TinyGSM/tree/main/ELF-B/elf-mmd) | [🤗 Checkpoint](https://huggingface.co/yresearch/ELF-MMD-TinyGSM/tree/main/ELF-B/elf-mmd-ird) |
+| ELF-M | TinyGSM | GPT-2 | [🤗 Checkpoint](https://huggingface.co/yresearch/ELF-MMD-TinyGSM/tree/main/ELF-M/elf-mmd) | — |
 
-Small differences can come from the hardware, the number of tensor-parallel GPUs and library
-versions, which change the attention and MoE kernels.
+## Reference Results
+
+Columns indicate the number of sampling steps. For OpenWebText, compare generative perplexity (lower is better) alongside unigram entropy, using the dataset entropy ($H \approx 5.43$) as a reference. For TinyGSM, higher accuracy is better.
+
+**OpenWebText — T5 encoder**
+
+| Method | Metric | 2 steps | 4 steps | 8 steps | 16 steps | 32 steps |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| ELF-MMD | Gen. PPL ↓ / Entropy | 192.28 / 5.53 | 110.07 / 5.49 | 56.63 / 5.45 | 43.01 / 5.41 | 39.79 / 5.40 |
+| ELF-MMD + IRD | Gen. PPL ↓ / Entropy | 141.03 / 5.47 | 78.11 / 5.44 | 47.33 / 5.39 | 38.83 / 5.35 | 35.75 / 5.33 |
+
+**OpenWebText — GPT-2 encoder**
+
+| Method | Metric | 2 steps | 4 steps | 8 steps | 16 steps | 32 steps |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| ELF-MMD | Gen. PPL ↓ / Entropy | 127.77 / 5.39 | 85.61 / 5.45 | 56.52 / 5.45 | 44.34 / 5.44 | 40.01 / 5.43 |
+| ELF-MMD + IRD | Gen. PPL ↓ / Entropy | 114.32 / 5.36 | 77.55 / 5.42 | 53.48 / 5.43 | 43.20 / 5.42 | 39.34 / 5.42 |
+
+**TinyGSM — accuracy (%) ↑**
+
+| Method | 1 step | 2 steps | 4 steps | 8 steps | 16 steps | 32 steps | 64 steps |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| ELF-MMD | 0.71 | 4.00 | 14.21 | 27.49 | 34.16 | 34.28 | 35.24 |
+| ELF-MMD + IRD | 1.33 | 7.46 | 20.76 | 32.46 | 35.62 | 35.97 | 36.30 |
 
 ## Evaluation
 
-`scripts/eval.sh` runs the DMax evaluator on every benchmark of a domain and prints a results
-table at the end. Use the `dinfer` environment:
+Evaluate the post-trained models across the sampling step counts specified in their configs:
 
 ```bash
-conda activate dinfer
+# ELF-B-MMD
+NGPU=8 bash scripts/launch.sh eval src/configs/mmd/elf-b_tinygsm.yml \
+    --config_override output_dir=outputs/eval-elf-b-mmd_tinygsm
 
-# Released checkpoints (downloaded from Hugging Face)
-DOMAIN=math bash scripts/eval.sh    # GSM8K, MATH500, Minerva-Algebra, ASDIV at threshold 0.85
-DOMAIN=code bash scripts/eval.sh    # HumanEval-Instruct, MBPP-Instruct at threshold 0.9
-
-# A checkpoint trained with this repository, or any other local or Hugging Face model
-DOMAIN=math MODEL_PATH=YOUR_MODEL_PATH bash scripts/eval.sh
-DOMAIN=math MODEL_PATH=Zigeng/DMax-Math-16B bash scripts/eval.sh
+# ELF-B-MMD + IRD
+NGPU=8 bash scripts/launch.sh eval src/configs/ird/elf-b_tinygsm.yml \
+    --config_override output_dir=outputs/eval-elf-b-mmd_ird_tinygsm
 ```
+
+## Data Preparation
+
+The datasets below are already tokenized for their corresponding encoders. The presets download and cache them automatically, so no additional preprocessing is required to use them.
+
+| Dataset / encoder | Hugging Face dataset |
+| --- | --- |
+| OpenWebText / T5-small | 🤗 [embedded-language-flows/openwebtext-t5](https://huggingface.co/datasets/embedded-language-flows/openwebtext-t5) |
+| OpenWebText / GPT-2 Large | 🤗 [yresearch/owt-gpt2](https://huggingface.co/datasets/yresearch/owt-gpt2) |
+| TinyGSM / GPT-2 | 🤗 [yresearch/tinygsm-gpt2](https://huggingface.co/datasets/yresearch/tinygsm-gpt2) |
+
+The GPT-2 OpenWebText presets use the `train` split. TinyGSM presets use `train` for training and `test` for evaluation; these are selected by `data_split` and `eval_data_split`.
+
+Hub loading uses all files for the selected split. For a complete local saved dataset, point to its directory; a direct `.arrow` path loads only that file.
+
+### Preprocessing custom data
+
+For TinyGSM-style data, create separate train/test JSONL files with `input` (prompt) and `output` (reference response) fields:
+
+```python
+from datasets import load_dataset
+from transformers import AutoTokenizer
+
+tokenizer = AutoTokenizer.from_pretrained("gpt2")
+dataset = load_dataset("json", data_files={"train": "train.jsonl", "test": "test.jsonl"})
+
+def tokenize(example):
+    return {
+        "condition_input_ids": tokenizer(example["input"], add_special_tokens=False)["input_ids"],
+        "input_ids": tokenizer(example["output"], add_special_tokens=False)["input_ids"],
+        "target": example["output"],
+    }
+
+dataset.map(tokenize).save_to_disk("data/custom")  # Keeps `input` for evaluation.
+```
+
+Point your config to the saved dataset:
+
+```yaml
+data_path: data/custom
+data_split: train
+eval_data_path: data/custom
+eval_data_split: test
+```
+
+For OpenWebText-style data, use `t5-small` or `gpt2-large` to match the encoder, load only a `train` split with a `text` field, and replace `tokenize` with:
+
+```python
+def tokenize(example):
+    return {"input_ids": tokenizer(example["text"])["input_ids"]}
+```
+
+OpenWebText only needs `data_path` and `data_split`. TinyGSM evaluation also accepts raw `input`/`output` JSONL via `eval_data_path`. The loader handles truncation and padding; keep encoder, padding token, and latent normalization settings matched to the teacher checkpoint.
 
 ## Training
 
-We post-train the checkpoints released by the DMax authors on their own training trajectories.
-Both are downloaded from Hugging Face automatically.
-
-| Domain | Initial checkpoint (DMax) | Training data (DMax) |
-| --- | --- | --- |
-| Math | 🤗 [Zigeng/DMax-Math-16B](https://huggingface.co/Zigeng/DMax-Math-16B) | 🤗 [Zigeng/DMax-LLaDA-2.0-Mini-Math-Trajectories](https://huggingface.co/datasets/Zigeng/DMax-LLaDA-2.0-Mini-Math-Trajectories) |
-| Code | 🤗 [Zigeng/DMax-Coder-16B](https://huggingface.co/Zigeng/DMax-Coder-16B) | 🤗 [Zigeng/DMax-LLaDA-2.0-Mini-Code-Trajectories](https://huggingface.co/datasets/Zigeng/DMax-LLaDA-2.0-Mini-Code-Trajectories) |
-
-Use the training environment and eight GPUs:
+Launch single-GPU training from the repository root:
 
 ```bash
-conda activate dmax-mmd
-
-DOMAIN=math bash scripts/train.sh              # DMax-Math-MMD, seed 0
-DOMAIN=code SEED=3 bash scripts/train.sh       # DMax-Coder-MMD, seed 3
-DOMAIN=math bash scripts/train.sh optimizer.lr=1e-6   # override any config key
+bash scripts/launch.sh train src/configs/mmd/t5_owt.yml
 ```
 
-The checkpoint is saved to `outputs/dmax_<domain>_mmd/seed<SEED>/final_model`, together with the
-training log (`training.jsonl`) and the full config (`resolved_config.yaml`). Evaluate it with
-`MODEL_PATH=outputs/dmax_<domain>_mmd/seed<SEED>/final_model`.
+Launch training on multiple GPUs on a single machine:
 
-## Acknowledgement
-
-This code builds on [DMax](https://github.com/czg1225/DMax): the data transform and LLaDA2 model
-code in [`vendor/`](vendor) are adapted from it under the Apache-2.0 license (see
-[`vendor/DMAX_LICENSE`](vendor/DMAX_LICENSE) and [`vendor/llada2/NOTICE.md`](vendor/llada2/NOTICE.md)),
-and evaluation runs DMax's copy of the [dInfer](https://github.com/inclusionAI/dInfer) evaluator.
-We thank the authors for releasing their models, data and code.
-
-
-## Citation
-
-If you find this work useful in your research, please consider citing our paper:
-
-```bibtex
-@article{drobyshevskiy2026mmd,
-  title   = {Representation-Space MMD for Diffusion Language Models},
-  author  = {Drobyshevskiy, Ilya and Sudakov, Ilia and Semenov, Maksim and Kuznedelev, Denis and
-             Ignatov, Maksim and Temirchev, Pavel and Balagansky, Nikita and
-             Meshchaninov, Viacheslav and Gushchin, Nikita and Baranchuk, Dmitry},
-  journal = {arXiv preprint arXiv:2610.06648}, 
-  year    = {2026}
-}
+```bash
+CUDA_VISIBLE_DEVICES=0,1 NGPU=2 bash scripts/launch.sh train src/configs/mmd/elf-b_tinygsm.yml
 ```
+
+| Dataset / model | MMD config | IRD config |
+| --- | --- | --- |
+| OpenWebText / T5-small | [mmd/t5_owt.yml](src/configs/mmd/t5_owt.yml) | [ird/t5_owt.yml](src/configs/ird/t5_owt.yml) |
+| OpenWebText / GPT-2 Large | [mmd/gpt2_owt.yml](src/configs/mmd/gpt2_owt.yml) | [ird/gpt2_owt.yml](src/configs/ird/gpt2_owt.yml) |
+| TinyGSM / ELF-B | [mmd/elf-b_tinygsm.yml](src/configs/mmd/elf-b_tinygsm.yml) | [ird/elf-b_tinygsm.yml](src/configs/ird/elf-b_tinygsm.yml) |
+| TinyGSM / ELF-M | [mmd/elf-m_tinygsm.yml](src/configs/mmd/elf-m_tinygsm.yml) | — |
+
+## Acknowledgements
+
+This repository builds on the [PyTorch implementation of ELF](https://github.com/lillian039/ELF/tree/pytorch_elf). We thank the authors for making their code available.

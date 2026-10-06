@@ -1,0 +1,14 @@
+# Original ELF OWT sampling settings.
+- sampling_method: sde
+  num_sampling_steps: [32]
+  cfgs: [1.0]
+  self_cond_cfg_scales: [3.0]
+  time_schedule: logit_normal
+  sde_gamma: 1.5
+
+- sampling_method: sde
+  num_sampling_steps: [64]
+  cfgs: [1.0]
+  self_cond_cfg_scales: [3.0]
+  time_schedule: logit_normal
+  sde_gamma: 1.0

@@ -1,0 +1,53 @@
+objective: mmd
+
+# Teacher (initializes the generator and the frozen feature extractor)
+task: owt
+teacher_checkpoint: embedded-language-flows/ELF-B-owt-torch
+checkpoint_path: yresearch/ELF-MMD-OWT/t5/elf-mmd/ckpt.pt  # Published model for standalone evaluation.
+
+# Dataset
+data_path: embedded-language-flows/openwebtext-t5
+max_length: 1024
+pad_token: pad
+
+# Encoder
+encoder_family: t5
+encoder_model_name: t5-small
+latent_mean: 0.0
+latent_std: 0.2
+
+# Model architecture (must match the teacher)
+model: ELF-B
+self_cond_cfg_min: 0.5
+self_cond_cfg_max: 5.0
+
+# MMD
+no_bootstrap_prob: 0.25
+max_bootstrap_steps: 3
+feature_layer: 5
+mmd_batch_size: 2
+unbiased_rbf: false
+sigma: 50  # RBF bandwidth.
+
+# Decoder objective
+decoder_prob: 0.2
+decoder_noise_scale: 5.0
+
+# Training
+global_batch_size: 64
+max_iters: 10000
+seed: "42, 43, 44, 45, 46"  # The first seed trains; all five are used for sampling.
+
+# Evaluation
+sampling_configs_path: src/configs/sampling_configs/elf-mmd_owt.yml
+num_samples: 1000
+eval_freq: 1000
+
+# Logging & Checkpointing
+log_freq: 100
+save_freq: 1000
+output_dir: outputs/elf-b-mmd_t5_owt
+
+# Wandb
+use_wandb: false
+wandb_project: elf-posttrain

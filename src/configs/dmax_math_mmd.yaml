@@ -1,5 +1,0 @@
-_base_: base.yaml
-output_dir: outputs/dmax_math_mmd
-model:
-  pretrained_model: Zigeng/DMax-Math-16B
-  revision: 8e2572f044e9ab89f24e01a0bd52909fd92e4d3e

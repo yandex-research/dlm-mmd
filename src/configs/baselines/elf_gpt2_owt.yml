@@ -1,0 +1,25 @@
+# Original ELF-B on OWT with GPT-2-large latents.
+task: owt
+checkpoint_path: yresearch/ELF-MMD-OWT/gpt2/elf/ckpt.pt
+model: ELF-B
+max_length: 1024
+pad_token: eos
+
+# Encoder normalization must match the checkpoint.
+encoder_family: gpt2
+encoder_model_name: gpt2-large
+tokenizer_name: gpt2-large
+latent_mean: -0.009133760006666183
+latent_std: 0.9250109602467304
+
+# Original ELF noise schedule.
+denoiser_noise_scale: 2.0
+denoiser_p_mean: -1.5
+denoiser_p_std: 0.8
+
+# Evaluation
+sampling_configs_path: src/configs/sampling_configs/elf_owt.yml
+global_batch_size: 64
+num_samples: 1000
+seed: "42, 43, 44, 45, 46"
+output_dir: outputs/eval-elf-gpt2-owt

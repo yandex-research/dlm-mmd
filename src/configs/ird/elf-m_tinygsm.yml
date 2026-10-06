@@ -1,0 +1,53 @@
+objective: ird
+
+# Teacher: an MMD checkpoint; it initializes the generator and the frozen target model.
+task: tinygsm
+teacher_checkpoint: yresearch/ELF-MMD-TinyGSM/ELF-M/elf-mmd/ckpt.pt
+checkpoint_path: yresearch/ELF-MMD-TinyGSM/ELF-M/elf-mmd-ird/ckpt.pt  # Published model for standalone evaluation.
+
+# Dataset
+data_path: yresearch/tinygsm-gpt2
+data_split: train
+eval_data_path: yresearch/tinygsm-gpt2
+eval_data_split: test
+max_length: 512
+max_input_length: 256
+pad_token: eos
+
+# Encoder
+encoder_family: gpt2
+encoder_model_name: gpt2
+tokenizer_name: gpt2
+latent_mean: yresearch/ELF-MMD-TinyGSM/ELF-M/elf-mmd/latent_stats.pt  # Per-channel statistics of the teacher.
+
+# Model architecture (must match the teacher)
+model: ELF-M
+decoder_head_norm: true
+self_cond_cfg_min: 1.0
+self_cond_cfg_max: 1.0
+
+# IRD
+ird_steps: 32
+
+# Decoder objective
+decoder_prob: 0.2
+decoder_noise_scale: 1.0
+
+# Training
+global_batch_size: 128
+max_iters: 20000
+seed: "42, 43, 44, 45, 46"
+
+# Evaluation
+sampling_configs_path: src/configs/sampling_configs/elf-mmd_tinygsm.yml
+num_samples: 1319
+eval_freq: 1000
+
+# Logging & Checkpointing
+log_freq: 100
+save_freq: 1000
+output_dir: outputs/elf-m-mmd-ird_tinygsm
+
+# Wandb
+use_wandb: false
+wandb_project: elf-posttrain

@@ -1,0 +1,24 @@
+# Original ELF-B on OWT with T5-small latents.
+task: owt
+checkpoint_path: embedded-language-flows/ELF-B-owt-torch
+model: ELF-B
+max_length: 1024
+pad_token: pad
+
+# Encoder normalization must match the checkpoint.
+encoder_family: t5
+encoder_model_name: t5-small
+latent_mean: 0.0
+latent_std: 0.2
+
+# Original ELF noise schedule.
+denoiser_noise_scale: 2.0
+denoiser_p_mean: -1.5
+denoiser_p_std: 0.8
+
+# Evaluation
+sampling_configs_path: src/configs/sampling_configs/elf_owt.yml
+global_batch_size: 64
+num_samples: 1000
+seed: "42, 43, 44, 45, 46"
+output_dir: outputs/eval-elf-t5-owt

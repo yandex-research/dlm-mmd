@@ -1,0 +1,50 @@
+objective: ird
+
+# Teacher: an MMD checkpoint; it initializes the generator and the frozen target model.
+task: owt
+teacher_checkpoint: yresearch/ELF-MMD-OWT/gpt2/elf-mmd/ckpt.pt
+checkpoint_path: yresearch/ELF-MMD-OWT/gpt2/elf-mmd-ird/ckpt.pt  # Published model for standalone evaluation.
+
+# Dataset
+data_path: yresearch/owt-gpt2
+data_split: train
+max_length: 1024
+pad_token: eos
+
+# Encoder
+encoder_family: gpt2
+encoder_model_name: gpt2-large
+tokenizer_name: gpt2-large
+latent_mean: -0.009133760006666183
+latent_std: 0.9250109602467304
+
+# Model architecture (must match the teacher)
+model: ELF-B
+self_cond_cfg_min: 0.5
+self_cond_cfg_max: 5.0
+
+# IRD
+ird_steps: 8
+
+# Decoder objective
+decoder_prob: 0.2
+decoder_noise_scale: 5.0
+
+# Training
+global_batch_size: 64
+max_iters: 6000
+seed: "42, 43, 44, 45, 46"
+
+# Evaluation
+sampling_configs_path: src/configs/sampling_configs/elf-mmd_owt.yml
+num_samples: 1000
+eval_freq: 500
+
+# Logging & Checkpointing
+log_freq: 100
+save_freq: 500
+output_dir: outputs/elf-b-mmd-ird_gpt2_owt
+
+# Wandb
+use_wandb: false
+wandb_project: elf-posttrain

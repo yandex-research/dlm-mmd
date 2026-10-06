@@ -1,0 +1,6 @@
+# Evaluate the number of refinement passes.
+- sampling_method: iterative_refinement
+  num_sampling_steps: [1, 2, 4, 8, 16, 32, 64]
+  cfgs: [1.0]
+  self_cond_cfg_scales: [1.0]
+  resample_z: true

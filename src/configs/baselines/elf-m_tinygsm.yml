@@ -1,0 +1,30 @@
+# Original ELF-M on TinyGSM with GPT-2-small latents.
+task: tinygsm
+checkpoint_path: yresearch/ELF-MMD-TinyGSM/ELF-M/elf/ckpt.pt
+model: ELF-M
+decoder_head_norm: true
+
+# The complete GSM8K evaluation split.
+eval_data_path: yresearch/tinygsm-gpt2
+eval_data_split: test
+max_length: 512
+max_input_length: 256
+pad_token: eos
+
+# Per-channel statistics.
+encoder_family: gpt2
+encoder_model_name: gpt2
+tokenizer_name: gpt2
+latent_mean: yresearch/ELF-MMD-TinyGSM/ELF-M/elf/latent_stats.pt
+
+# Original ELF noise schedule.
+denoiser_noise_scale: 2.0
+denoiser_p_mean: -1.75
+denoiser_p_std: 0.8
+
+# Evaluation
+sampling_configs_path: src/configs/sampling_configs/elf_tinygsm.yml
+global_batch_size: 32
+num_samples: 1319
+seed: "42, 43, 44, 45, 46"
+output_dir: outputs/eval-elf-m-tinygsm

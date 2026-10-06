@@ -1,7 +1,9 @@
 __pycache__/
+*.py[cod]
 .pytest_cache/
-*.pyc
-*.egg-info/
-outputs/
 .ruff_cache/
-DMax/
+outputs/
+checkpoints/
+*.ckpt
+*.pt
+*.log

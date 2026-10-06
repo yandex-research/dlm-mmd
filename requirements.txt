@@ -1,11 +1,10 @@
-# Install into the existing training image without replacing its CUDA stack.
-torch>=2.6
-transformers>=4.48
-huggingface_hub
-safetensors
-datasets
-numpy
-PyYAML
-jinja2
-omegaconf==2.4.0.dev15
-wandb
+torch>=2.3.0
+numpy>=1.26.4,<2.0.0
+PyYAML>=6.0.1
+tqdm>=4.66.0
+einops>=0.7.0
+transformers>=4.41.2,<4.45.0
+datasets>=2.19.0
+huggingface-hub>=0.23.0
+wandb>=0.16.6
+muon-optimizer>=0.1.0

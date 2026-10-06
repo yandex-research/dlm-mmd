@@ -1,0 +1,58 @@
+objective: mmd
+
+# Teacher (initializes the generator and the frozen feature extractor)
+task: tinygsm
+teacher_checkpoint: yresearch/ELF-MMD-TinyGSM/ELF-B/elf/ckpt.pt
+checkpoint_path: yresearch/ELF-MMD-TinyGSM/ELF-B/elf-mmd/ckpt.pt  # Published model for standalone evaluation.
+
+# Dataset
+data_path: yresearch/tinygsm-gpt2
+data_split: train
+eval_data_path: yresearch/tinygsm-gpt2
+eval_data_split: test
+max_length: 512
+max_input_length: 256
+pad_token: eos
+
+# Encoder
+encoder_family: gpt2
+encoder_model_name: gpt2
+tokenizer_name: gpt2
+latent_mean: yresearch/ELF-MMD-TinyGSM/ELF-B/elf/latent_stats.pt  # Per-channel statistics of the teacher.
+
+# Model architecture (must match the teacher)
+model: ELF-B
+decoder_head_norm: true
+self_cond_cfg_min: 1.0
+self_cond_cfg_max: 1.0
+
+# MMD: each prompt gets 64 generated responses, compared with its reference.
+no_bootstrap_prob: 0.0
+max_bootstrap_steps: 4
+feature_layer: 5
+mmd_batch_size: 64  # global_batch_size must be a multiple of 64 * number of GPUs.
+unbiased_rbf: true
+sigma: 3330  # RBF bandwidth.
+
+# Decoder objective
+decoder_prob: 0.2
+decoder_noise_scale: 1.0
+
+# Training
+global_batch_size: 128
+max_iters: 7000
+seed: "42, 43, 44, 45, 46"  # The first seed trains; all five are used for sampling.
+
+# Evaluation
+sampling_configs_path: src/configs/sampling_configs/elf-mmd_tinygsm.yml
+num_samples: 1319
+eval_freq: 1000
+
+# Logging & Checkpointing
+log_freq: 100
+save_freq: 1000
+output_dir: outputs/elf-b-mmd_tinygsm
+
+# Wandb
+use_wandb: false
+wandb_project: elf-posttrain
